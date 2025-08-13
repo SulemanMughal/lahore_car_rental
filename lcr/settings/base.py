@@ -121,6 +121,9 @@ else:
 # ── Static & Media ─────────────────────────────────────────────────────────────
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [
+    BASE_DIR / "static",  # Additional static files directory if you have one
+]
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
@@ -259,10 +262,15 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,  # keep schema separate from the UI routes
     "SCHEMA_PATH_PREFIX": r"/api",  # only include /api/* endpoints
     "COMPONENT_SPLIT_REQUEST": True,
-    "SERVE_PERMISSIONS": os.getenv("SWAGGER_SERVE_PERMISSIONS", "rest_framework.permissions.AllowAny").split(","),  # lock down later for prod
+    "SERVE_PERMISSIONS": [eval(perm.strip()) for perm in os.getenv("SWAGGER_SERVE_PERMISSIONS", "rest_framework.permissions.AllowAny").split(",")],
     "SWAGGER_UI_DIST": "SIDECAR",  # serve assets locally
     "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
     "REDOC_DIST": "SIDECAR",
+    "SWAGGER_UI_SETTINGS": {
+        "deepLinking": True,
+        "persistAuthorization": True,
+        "displayOperationId": False,
+    },
     "SECURITY": [{"BearerAuth": []}],  # default security for protected endpoints
     "SECURITY_SCHEMES": {
         "BearerAuth": {
@@ -276,7 +284,6 @@ SPECTACULAR_SETTINGS = {
         # {"url": "https://api.example.com", "description": "Prod"},
     ],
     "CACHE_TIMEOUT": 3600,
-    
 }
 
 
