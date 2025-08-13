@@ -1,0 +1,5 @@
+-r base.in
+ipython
+django-debug-toolbar>=4.3,<4.5
+pytest
+pytest-django

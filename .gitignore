@@ -1,0 +1,54 @@
+# ── Python ───────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.so
+*.pyo
+
+# ── Django ───────────────────────────────────────────────────────────────
+*.log
+staticfiles/
+media/
+db.sqlite3
+
+# ── Environment variables ────────────────────────────────────────────────
+.env
+.env.*.local
+*.secrets
+# Allow template env file to be committed
+!.env.example
+
+# ── Pip-tools compiled requirements ──────────────────────────────────────
+# .in files are source (commit)
+# .txt files are generated (commit them for lock versions)
+# If you prefer NOT committing .txt, uncomment below:
+# requirements/*.txt
+
+# ── Virtual environments ─────────────────────────────────────────────────
+.venv/
+venv/
+ENV/
+env.bak/
+
+# ── OS files ─────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── IDE/project files ────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.iml
+
+# ── Testing/coverage ─────────────────────────────────────────────────────
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+
+# ── Migrations (optional: keep for apps you version control) ──────────────
+# Uncomment if you want to ignore migration files (not recommended)
+# */migrations/*.py
+# */migrations/*.pyc
+
+# ── Docker ───────────────────────────────────────────────────────────────
+*.pid
+*.pid.lock
