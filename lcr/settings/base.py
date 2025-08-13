@@ -16,10 +16,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # third-party
-    # "rest_framework",
-    # local apps
-    # "apps.core",
+    
+    
+    # Local apps
+    "accounts",
+    "rental"
 ]
 
 MIDDLEWARE = [
@@ -31,6 +32,9 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+AUTH_USER_MODEL = "accounts.User"
+
 
 ROOT_URLCONF = "lcr.urls"
 WSGI_APPLICATION = "lcr.wsgi.application"

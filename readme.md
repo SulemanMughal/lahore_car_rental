@@ -32,3 +32,8 @@ pip-compile --upgrade --generate-hashes -o base.txt base.in
 
 
 - Use --require-hashes in CI/CD to ensure exact, verified wheels are installed.
+
+
+
+Command : 
+python3 manage.py seed_roles
