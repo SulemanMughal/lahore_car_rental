@@ -47,6 +47,10 @@ class VehicleViewSet(ModelViewSet):
     http_method_names = ["get", "post", "put", "delete", "head", "options"]
 
     def get_queryset(self):
+        # Handle schema generation
+        if getattr(self, 'swagger_fake_view', False):
+            return Car.objects.none()
+            
         u = self.request.user
 
         # writers (fleet/admin) see all cars
@@ -139,6 +143,10 @@ class BookingViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
     ordering = ["-start"]
 
     def get_queryset(self):
+        # Handle schema generation
+        if getattr(self, 'swagger_fake_view', False):
+            return Booking.objects.none()
+            
         u = self.request.user
         role = (getattr(u, "role", "") or "").lower()
         qs = Booking.objects.select_related("car", "customer")

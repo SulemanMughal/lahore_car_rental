@@ -1,4 +1,6 @@
 # rental/api/serializers.py
+from typing import Dict, Any
+from drf_spectacular.utils import extend_schema_field
 import datetime, re
 from rest_framework import serializers
 from rental.models import Booking, Car
@@ -49,7 +51,8 @@ class BookingSerializer(serializers.ModelSerializer):
         fields = ["id", "car", "car_summary", "start", "end", "status"]
         read_only_fields = ["id", "status", "car_summary"]  # status can be managed by staff later
 
-    def get_car_summary(self, obj):
+    @extend_schema_field(serializers.DictField)
+    def get_car_summary(self, obj) -> Dict[str, Any]:
         return {
             "id": obj.car_id,
             "plate_no": obj.car.plate_no,
