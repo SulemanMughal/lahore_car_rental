@@ -1,0 +1,64 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-lcr}
+      POSTGRES_USER: ${POSTGRES_USER:-lcr}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lcr}
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"   # optional: expose for local tools
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lcr} -d ${POSTGRES_DB:-lcr}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      # Point Django at the DB container
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+
+      # SimpleJWT keys (mounted as secrets below)
+      JWT_PRIVATE_KEY_FILE: /run/secrets/jwt_private_key
+      JWT_PUBLIC_KEY_FILE: /run/secrets/jwt_public_key
+
+      # Optional tuning
+      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE:-lcr.settings}
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-false}
+      DJANGO_COLLECTSTATIC: ${DJANGO_COLLECTSTATIC:-1}
+      WEB_CONCURRENCY: ${WEB_CONCURRENCY:-2}
+      WEB_TIMEOUT: ${WEB_TIMEOUT:-60}
+    volumes:
+      - staticdata:/static           # STATIC_ROOT
+      - mediadata:/app/media         # MEDIA_ROOT (adjust if different)
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    secrets:
+      - jwt_private_key
+      - jwt_public_key
+    restart: unless-stopped
+
+secrets:
+  jwt_private_key:
+    file: ./secrets/jwtRS256.key
+  jwt_public_key:
+    file: ./secrets/jwtRS256.key.pub
+
+volumes:
+  dbdata:
+  staticdata:
+  mediadata:
