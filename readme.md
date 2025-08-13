@@ -1,71 +1,50 @@
-# To Generate Compile Files:
+# env variables:
 
 
-pip-compile --generate-hashes --output-file base.txt base.in
-pip-compile --generate-hashes --output-file dev.txt dev.in
-pip-compile --generate-hashes --output-file staging.txt staging.in
-pip-compile --generate-hashes --output-file production.txt production.in
+```
+DJANGO_SECRET_KEY=change-me
+DJANGO_DEBUG=true
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
+#DATABASE_URL=postgres://postgres:123456789@localhost:5432/lcr_db
+DATABASE_URL=postgres://lcr:lcr@db:5432/lcr
+CACHE_URL=redis://localhost:6379/1
+DJANGO_LOG_LEVEL=DEBUG
+DJANGO_SETTINGS_MODULE=lcr.settings.base
 
-
-Recompile whenever you change .in files:
-pip-compile --upgrade --generate-hashes -o base.txt base.in
-<!-- repeat for others if needed -->
-
-
-
-## Install per environment
-1. Dev/local
-
-
-    pip install -r requirements/dev.txt
-
-
-2. Staging
-
-
-    pip install --require-hashes -r requirements/staging.txt
-
-3. Production
-
-
-    pip install --require-hashes -r requirements/production.txt
-
-
-- Use --require-hashes in CI/CD to ensure exact, verified wheels are installed.
+#JWT_PRIVATE_KEY_FILE=jwtRS256.key
+#JWT_PUBLIC_KEY_FILE=jwtRS256.key.pub
 
 
 
-Command : 
-python3 manage.py seed_roles
+# PostgreSQL settings for docker-compose
+POSTGRES_DB=lcr
+POSTGRES_USER=lcr
+POSTGRES_PASSWORD=lcr
+
+# JWT keys - these will be mounted as volumes in Docker
+JWT_PRIVATE_KEY_FILE=/app/secrets/jwtRS256.key
+JWT_PUBLIC_KEY_FILE=/app/secrets/jwtRS256.key.pub
+
+CORS_ALLOWED_ORIGINS="https://your-frontend.example,https://another-frontend.example"
 
 
+SWAGGER_SERVE_PERMISSIONS=rest_framework.permissions.AllowAny
+#["rest_framework.permissions.AllowAny"]
+# Swagger permissions
+#SWAGGER_SERVE_PERMISSIONS=["rest_framework.permissions.AllowAny"]
 
-Curl Commands:
+# Gunicorn settings for Docker
+WEB_CONCURRENCY=2
+WEB_TIMEOUT=60
+DJANGO_COLLECTSTATIC=1
 
-- register a user:
-
-curl -X POST "$BASE/register" \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json" \
-  -H "X-Request-ID: $REQ_ID" \
-  --data-raw '{
-    "username": "ali",
-    "email": "ali@example.com",
-    "password": "VeryStrong!Pass1"
-  }'
-
+# Timezone
+TZ=UTC
+```
 
 
-# JWT Keys
+To run this project:
+```docker compose up -d --build```
 
-# 4096-bit RSA private key
-openssl genrsa -out jwtRS256.key 4096
-
-# Public key derived from the private key
-openssl rsa -in jwtRS256.key -pubout -out jwtRS256.key.pub
-
-
-Update .env files
-
-JWT_PRIVATE_KEY_FILE=jwtRS256.key
-JWT_PUBLIC_KEY_FILE=jwtRS256.key.pub
+to turn off this project
+```docker compose down -d```
