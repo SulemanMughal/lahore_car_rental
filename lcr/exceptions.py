@@ -3,15 +3,27 @@ from rest_framework.views import exception_handler
 from rest_framework.exceptions import Throttled
 from django.utils.translation import gettext_lazy as _
 import traceback
+import logging
+
+logger = logging.getLogger(__name__)
 
 def custom_exception_handler(exc, context):
+    # Print traceback to console
+    print("=" * 80)
+    print("EXCEPTION CAUGHT:")
     print(traceback.format_exc())
+    print("=" * 80)
+    
+    # Also log via Django logging system
+    logger.exception("Unhandled exception occurred", exc_info=exc)
+    
     resp = exception_handler(exc, context)
     request = context.get("request")
     trace_id = getattr(request, "request_id", None)
 
     if resp is None:
         # Unhandled -> 500 envelope
+        logger.error(f"Unhandled exception for request {trace_id}: {exc}")
         return _wrap(500, False, None, {"code": "server_error", "message": "Internal server error"}, trace_id)
 
     # DRF already set status_code & data; normalize into our envelope

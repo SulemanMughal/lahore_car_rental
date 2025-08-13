@@ -102,7 +102,19 @@ else:
 # Use Redis via CACHE_URL like: redis://:password@host:6379/1
 CACHE_URL = os.getenv("CACHE_URL", "")
 if CACHE_URL:
-    CACHES = {"default": {"BACKEND": "django.core.cache.backends.redis.RedisCache", "LOCATION": CACHE_URL}}
+    try:
+        # Try to create a Redis cache configuration
+        CACHES = {"default": {"BACKEND": "django.core.cache.backends.redis.RedisCache", "LOCATION": CACHE_URL}}
+        # Test the connection
+        import redis
+        from urllib.parse import urlparse
+        parsed = urlparse(CACHE_URL)
+        client = redis.Redis(host=parsed.hostname or 'localhost', port=parsed.port or 6379, db=parsed.path.lstrip('/') or 0)
+        client.ping()  # Test connection
+        print(f"✓ Redis cache connected at {CACHE_URL}")
+    except Exception as e:
+        print(f"⚠ Redis connection failed ({e}), falling back to local memory cache")
+        CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
 else:
     CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
 
@@ -140,34 +152,51 @@ USE_I18N = True
 USE_TZ = True
 
 # ── Logging ────────────────────────────────────────────────────────────────────
-# LOG_LEVEL = os.getenv("DJANGO_LOG_LEVEL", "INFO")
-# LOGGING = {
-#     "version": 1,
-#     "disable_existing_loggers": False,
-#     "formatters": {
-#         "standard": {"format": "[%(asctime)s] %(levelname)s %(name)s: %(message)s"},
-#         "verbose": {
-#             "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
-#             "style": "{",
-#         },
-#     },
-#     "handlers": {
-#         "console": {"class": "logging.StreamHandler", "formatter": "verbose"},
-#     },
-#     "root": {"handlers": ["console"], "level": LOG_LEVEL},
-#     "loggers": {
-#         "django": {
-#             "handlers": ["console"],
-#             "level": "INFO",
-#             "propagate": False,
-#         },
-#         "django.request": {
-#             "handlers": ["console"],
-#             "level": "ERROR",
-#             "propagate": False,
-#         },
-#     },
-# }
+LOG_LEVEL = os.getenv("DJANGO_LOG_LEVEL", "INFO")
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "standard": {"format": "[%(asctime)s] %(levelname)s %(name)s: %(message)s"},
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+            "style": "{",
+        },
+        "detailed": {
+            "format": "[%(asctime)s] %(levelname)s %(name)s [%(filename)s:%(lineno)d]: %(message)s",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler", 
+            "formatter": "detailed",
+            "level": "DEBUG"
+        },
+    },
+    "root": {"handlers": ["console"], "level": LOG_LEVEL},
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "django.request": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        "django.server": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        # Log all exceptions with full tracebacks
+        "": {
+            "handlers": ["console"],
+            "level": "ERROR",
+        },
+    },
+}
 
 
 
