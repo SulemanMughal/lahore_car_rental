@@ -1,36 +1,65 @@
 from pathlib import Path
 import os
 from urllib.parse import quote_plus
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
+load_dotenv(BASE_DIR / ".env", override=False)  # <-- add: actually read the .env
+
+
+def read_secret(name, default=""):
+    # Prefer *_FILE path; else raw env (supports \n-escaped values)
+    file_var = os.getenv(f"{name}_FILE")
+    if file_var and Path(file_var).exists():
+        return Path(file_var).read_text()
+    raw = os.getenv(name, default)
+    return raw.replace("\\n", "\n") if raw else default
+
 # ── Core ────────────────────────────────────────────────────────────────────────
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-only-not-for-prod")
+
+
+
 DEBUG = os.getenv("DJANGO_DEBUG", "false").lower() == "true"
 ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
-    "django.contrib.auth",
+    # "django.contrib.admin",
+    # "django.contrib.auth",
+    # "django.contrib.contenttypes",
+    # "django.contrib.sessions",
+    # "django.contrib.messages",
+
+    "django.contrib.auth",        
     "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
+    "django.contrib.staticfiles", # needed for drf-spectacular-sidecar assets
+
+
+    "rest_framework",
+    "rest_framework_simplejwt",
     
     
     # Local apps
     "accounts",
-    "rental"
+    "rental",
+
+    "drf_spectacular",
+    "drf_spectacular_sidecar",  # ships Swagger UI assets so you don’t need internet
+
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
+    # "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+    # "django.middleware.csrf.CsrfViewMiddleware",
+    # "django.contrib.auth.middleware.AuthenticationMiddleware",
+    # "django.contrib.messages.middleware.MessageMiddleware",
+    # "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "lcr.middleware.RequestIdMiddleware"
 ]
 
 AUTH_USER_MODEL = "accounts.User"
@@ -44,6 +73,9 @@ ASGI_APPLICATION = "lcr.asgi.application"
 # Prefer DATABASE_URL (e.g. postgres://user:pass@host:5432/dbname)
 # Fallback to SQLite for local/dev.
 DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
+
+# print(f"Using DATABASE_URL: {DATABASE_URL}")  # Debugging line to check the URL
+
 if DATABASE_URL:
     # If you use dj-database-url, replace this section with dj_database_url.config()
     import urllib.parse as up
@@ -118,3 +150,88 @@ LOGGING = {
     },
     "root": {"handlers": ["console"], "level": LOG_LEVEL},
 }
+
+
+
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.IsAuthenticated",  # default; open up per-view if needed
+    ),
+    "DEFAULT_RENDERER_CLASSES": (
+        "rest_framework.renderers.JSONRenderer",  # no browsable API
+    ),
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.ScopedRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "60/min",       # generic anonymous burst control
+        "auth": "10/min",       # login/register scope
+    },
+    "EXCEPTION_HANDLER": "lcr.exceptions.custom_exception_handler",
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+
+# SimpleJWT (tune to your needs)
+from datetime import timedelta
+SIMPLE_JWT = {
+    "ALGORITHM": "RS256",
+    "SIGNING_KEY": read_secret("JWT_PRIVATE_KEY_PEM"),   # load full PEM via env/secret manager
+    "VERIFYING_KEY": read_secret("JWT_PUBLIC_KEY_PEM"),
+    "AUDIENCE": "lcr-api",
+    "ISSUER": "lcr-auth",
+    "JTI_CLAIM": "jti",
+
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=20),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=14),
+
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,   # add app 'rest_framework_simplejwt.token_blacklist' if you use DB blacklist
+
+    "UPDATE_LAST_LOGIN": False,
+    "LEEWAY": 45,  # seconds of clock skew tolerance
+
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "VERIFY_AUD": True,
+}
+
+
+# OpenAPI / Swagger
+SPECTACULAR_SETTINGS = {
+    "TITLE": "LCR API",
+    "DESCRIPTION": "Car rental REST API (auth, fleet, bookings, payments).",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,  # keep schema separate from the UI routes
+    "SCHEMA_PATH_PREFIX": r"/api",  # only include /api/* endpoints
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SERVE_PERMISSIONS": os.getenv("SWAGGER_SERVE_PERMISSIONS", "rest_framework.permissions.AllowAny").split(","),  # lock down later for prod
+    "SWAGGER_UI_DIST": "SIDECAR",  # serve assets locally
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    "REDOC_DIST": "SIDECAR",
+    "SECURITY": [{"BearerAuth": []}],  # default security for protected endpoints
+    "SECURITY_SCHEMES": {
+        "BearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+        }
+    },
+    "SERVERS": [
+        {"url": "http://localhost:8000", "description": "Local"},
+        # {"url": "https://api.example.com", "description": "Prod"},
+    ],
+    "CACHE_TIMEOUT": 3600,
+    
+}
+
+
+CORS_ALLOW_CREDENTIALS = False
+CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "https://your-frontend.example,").split(",")
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = "Lax"    # or "Strict" if your UX allows
+CSRF_COOKIE_HTTPONLY = False    # JS must read csrftoken to echo in header

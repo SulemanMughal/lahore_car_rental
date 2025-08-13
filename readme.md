@@ -37,3 +37,35 @@ pip-compile --upgrade --generate-hashes -o base.txt base.in
 
 Command : 
 python3 manage.py seed_roles
+
+
+
+Curl Commands:
+
+- register a user:
+
+curl -X POST "$BASE/register" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -H "X-Request-ID: $REQ_ID" \
+  --data-raw '{
+    "username": "ali",
+    "email": "ali@example.com",
+    "password": "VeryStrong!Pass1"
+  }'
+
+
+
+# JWT Keys
+
+# 4096-bit RSA private key
+openssl genrsa -out jwtRS256.key 4096
+
+# Public key derived from the private key
+openssl rsa -in jwtRS256.key -pubout -out jwtRS256.key.pub
+
+
+Update .env files
+
+JWT_PRIVATE_KEY_FILE=jwtRS256.key
+JWT_PUBLIC_KEY_FILE=jwtRS256.key.pub

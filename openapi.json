@@ -1,0 +1,181 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "title": "LCR API",
+        "version": "1.0.0",
+        "description": "Car rental REST API (auth, fleet, bookings, payments)."
+    },
+    "paths": {
+        "/api/v1/auth/login": {
+            "post": {
+                "operationId": "v1_auth_login_create",
+                "parameters": [
+                    {
+                        "in": "header",
+                        "name": "X-Request-ID",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Optional idempotency/trace header echoed as 'X-Request-ID' in responses."
+                    }
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            },
+                            "examples": {
+                                "LoginPayload(email)": {
+                                    "value": {
+                                        "username_or_email": "ali@example.com",
+                                        "password": "VeryStrong!Pass1"
+                                    },
+                                    "summary": "Login payload (email)"
+                                }
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Logged in + tokens"
+                    },
+                    "400": {
+                        "description": "Invalid credentials"
+                    },
+                    "429": {
+                        "description": "Rate limited"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/register": {
+            "post": {
+                "operationId": "v1_auth_register_create",
+                "parameters": [
+                    {
+                        "in": "header",
+                        "name": "X-Request-ID",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Optional idempotency/trace header echoed as 'X-Request-ID' in responses."
+                    }
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterRequest"
+                            },
+                            "examples": {
+                                "RegisterPayload": {
+                                    "value": {
+                                        "username": "ali",
+                                        "email": "ali@example.com",
+                                        "password": "VeryStrong!Pass1"
+                                    },
+                                    "summary": "Register payload"
+                                }
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "User created + tokens"
+                    },
+                    "400": {
+                        "description": "Validation error"
+                    },
+                    "429": {
+                        "description": "Rate limited"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "LoginRequest": {
+                "type": "object",
+                "properties": {
+                    "username_or_email": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "password": {
+                        "type": "string",
+                        "minLength": 1
+                    }
+                },
+                "required": [
+                    "password",
+                    "username_or_email"
+                ]
+            },
+            "RegisterRequest": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.",
+                        "pattern": "^[\\w.@+-]+$",
+                        "maxLength": 150
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "minLength": 1
+                    },
+                    "password": {
+                        "type": "string",
+                        "writeOnly": true,
+                        "minLength": 8
+                    }
+                },
+                "required": [
+                    "email",
+                    "password",
+                    "username"
+                ]
+            }
+        }
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "Local"
+        }
+    ]
+}
