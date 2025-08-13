@@ -34,7 +34,7 @@ FROM python:3.13-slim AS runtime
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH="/opt/venv/bin:$PATH" \
-    DJANGO_SETTINGS_MODULE="lcr.settings"  # adjust if your settings module differs
+    DJANGO_SETTINGS_MODULE="lcr.settings.base"
 
 # Only runtime libs here (no compilers)
 RUN apt-get update && apt-get install -y --no-install-recommends \
