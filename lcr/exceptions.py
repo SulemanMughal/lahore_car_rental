@@ -2,8 +2,10 @@
 from rest_framework.views import exception_handler
 from rest_framework.exceptions import Throttled
 from django.utils.translation import gettext_lazy as _
+import traceback
 
 def custom_exception_handler(exc, context):
+    print(traceback.format_exc())
     resp = exception_handler(exc, context)
     request = context.get("request")
     trace_id = getattr(request, "request_id", None)
