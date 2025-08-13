@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1.6
-
 ############################
 # Stage 1 — Build (deps)
 ############################
@@ -19,6 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # Use Docker layer caching: copy requirements first
+COPY requirements/ requirements/
 COPY requirements.txt .
 
 # Create a dedicated virtualenv for dependencies

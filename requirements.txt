@@ -1,0 +1,8 @@
+# This file is auto-generated from requirements/base.txt
+# To update, run: pip-compile requirements/base.in
+
+-r requirements/base.txt
+
+# Additional dependencies for production
+gunicorn>=20.1.0
+uvicorn[standard]>=0.15.0
