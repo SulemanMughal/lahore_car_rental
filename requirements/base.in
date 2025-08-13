@@ -9,3 +9,7 @@ drf-spectacular-sidecar
 django-cors-headers
 django-filter
 redis>=5.0,<6.0
+
+# Production ASGI server
+gunicorn>=20.1.0
+uvicorn[standard]>=0.15.0

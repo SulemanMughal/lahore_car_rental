@@ -1,8 +1,4 @@
-# This file is auto-generated from requirements/base.txt
-# To update, run: pip-compile requirements/base.in
+# This file points to the compiled requirements
+# Use this for Docker builds to ensure hash verification works
 
 -r requirements/base.txt
-
-# Additional dependencies for production
-gunicorn>=20.1.0
-uvicorn[standard]>=0.15.0
