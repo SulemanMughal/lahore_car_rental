@@ -262,7 +262,7 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,  # keep schema separate from the UI routes
     "SCHEMA_PATH_PREFIX": r"/api",  # only include /api/* endpoints
     "COMPONENT_SPLIT_REQUEST": True,
-    "SERVE_PERMISSIONS": [eval(perm.strip()) for perm in os.getenv("SWAGGER_SERVE_PERMISSIONS", "rest_framework.permissions.AllowAny").split(",")],
+    "SERVE_PERMISSIONS": os.getenv("SWAGGER_SERVE_PERMISSIONS", "rest_framework.permissions.AllowAny").split(","),
     "SWAGGER_UI_DIST": "SIDECAR",  # serve assets locally
     "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
     "REDOC_DIST": "SIDECAR",
