@@ -140,34 +140,34 @@ USE_I18N = True
 USE_TZ = True
 
 # ── Logging ────────────────────────────────────────────────────────────────────
-LOG_LEVEL = os.getenv("DJANGO_LOG_LEVEL", "INFO")
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "standard": {"format": "[%(asctime)s] %(levelname)s %(name)s: %(message)s"},
-        "verbose": {
-            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
-            "style": "{",
-        },
-    },
-    "handlers": {
-        "console": {"class": "logging.StreamHandler", "formatter": "verbose"},
-    },
-    "root": {"handlers": ["console"], "level": LOG_LEVEL},
-    "loggers": {
-        "django": {
-            "handlers": ["console"],
-            "level": "INFO",
-            "propagate": False,
-        },
-        "django.request": {
-            "handlers": ["console"],
-            "level": "ERROR",
-            "propagate": False,
-        },
-    },
-}
+# LOG_LEVEL = os.getenv("DJANGO_LOG_LEVEL", "INFO")
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "formatters": {
+#         "standard": {"format": "[%(asctime)s] %(levelname)s %(name)s: %(message)s"},
+#         "verbose": {
+#             "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+#             "style": "{",
+#         },
+#     },
+#     "handlers": {
+#         "console": {"class": "logging.StreamHandler", "formatter": "verbose"},
+#     },
+#     "root": {"handlers": ["console"], "level": LOG_LEVEL},
+#     "loggers": {
+#         "django": {
+#             "handlers": ["console"],
+#             "level": "INFO",
+#             "propagate": False,
+#         },
+#         "django.request": {
+#             "handlers": ["console"],
+#             "level": "ERROR",
+#             "propagate": False,
+#         },
+#     },
+# }
 
 
 
