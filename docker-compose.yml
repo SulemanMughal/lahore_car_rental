@@ -29,12 +29,12 @@ services:
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
 
-      # SimpleJWT keys (mounted as secrets below)
-      JWT_PRIVATE_KEY_FILE: /run/secrets/jwt_private_key
-      JWT_PUBLIC_KEY_FILE: /run/secrets/jwt_public_key
+      # SimpleJWT keys (mounted as volumes for development)
+      JWT_PRIVATE_KEY_FILE: /app/secrets/jwtRS256.key
+      JWT_PUBLIC_KEY_FILE: /app/secrets/jwtRS256.key.pub
 
       # Optional tuning
-      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE:-lcr.settings}
+      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE:-lcr.settings.base}
       DJANGO_DEBUG: ${DJANGO_DEBUG:-false}
       DJANGO_COLLECTSTATIC: ${DJANGO_COLLECTSTATIC:-1}
       WEB_CONCURRENCY: ${WEB_CONCURRENCY:-2}
@@ -42,21 +42,13 @@ services:
     volumes:
       - staticdata:/static           # STATIC_ROOT
       - mediadata:/app/media         # MEDIA_ROOT (adjust if different)
+      - ./secrets:/app/secrets:ro    # JWT keys for development
     ports:
       - "8000:8000"
     depends_on:
       db:
         condition: service_healthy
-    secrets:
-      - jwt_private_key
-      - jwt_public_key
     restart: unless-stopped
-
-secrets:
-  jwt_private_key:
-    file: ./secrets/jwtRS256.key
-  jwt_public_key:
-    file: ./secrets/jwtRS256.key.pub
 
 volumes:
   dbdata:
