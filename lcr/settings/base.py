@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     "drf_spectacular_sidecar",  # ships Swagger UI assets so you don’t need internet
 
     "corsheaders",
+
+    "django_filters",
 ]
 
 MIDDLEWARE = [
@@ -174,6 +176,9 @@ REST_FRAMEWORK = {
     },
     "EXCEPTION_HANDLER": "lcr.exceptions.custom_exception_handler",
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_FILTER_BACKENDS" : [
+        "django_filters.rest_framework.DjangoFilterBackend"
+    ]
 }
 
 
